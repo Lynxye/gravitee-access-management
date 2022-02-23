@@ -20,8 +20,8 @@ import io.gravitee.am.management.handlers.management.api.model.PasswordValue;
 import io.gravitee.am.management.handlers.management.api.model.StatusEntity;
 import io.gravitee.am.management.handlers.management.api.model.UserEntity;
 import io.gravitee.am.management.handlers.management.api.resources.AbstractResource;
-import io.gravitee.am.management.service.IdentityProviderServiceProxy;
 import io.gravitee.am.management.service.IdentityProviderManager;
+import io.gravitee.am.management.service.IdentityProviderServiceProxy;
 import io.gravitee.am.management.service.UserService;
 import io.gravitee.am.model.Acl;
 import io.gravitee.am.model.ReferenceType;
@@ -87,6 +87,7 @@ public class UserResource extends AbstractResource {
             @PathParam("environmentId") String environmentId,
             @PathParam("domain") String domain,
             @PathParam("user") String user,
+            @QueryParam("metadata") @DefaultValue("false") boolean metadata,
             @Suspended final AsyncResponse response) {
 
         checkAnyPermission(organizationId, environmentId, domain, Permission.DOMAIN_USER, Acl.READ)
@@ -99,7 +100,8 @@ public class UserResource extends AbstractResource {
                                     && !user1.getReferenceId().equalsIgnoreCase(domain)) {
                                 throw new BadRequestException("User does not belong to domain");
                             }
-                            return Maybe.just(new UserEntity(user1));
+
+                            return Maybe.just(new UserEntity(user1, metadata));
                         })
                         .flatMap(this::enhanceIdentityProvider)
                         .flatMap(this::enhanceClient))

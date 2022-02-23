@@ -17,16 +17,26 @@ package io.gravitee.am.management.handlers.management.api.model;
 
 import io.gravitee.am.model.User;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * @author Titouan COMPIEGNE (titouan.compiegne at graviteesource.com)
  * @author GraviteeSource Team
  */
 public class UserEntity extends User {
+    public static final String MD_SOURCE_ID = "sourceId";
 
     private ApplicationEntity applicationEntity;
 
-    public UserEntity(User user) {
+    private Map<String, Object> metadata;
+
+    public UserEntity(User user){
+        this(user, false);
+    }
+
+    public UserEntity(User user, boolean withMetadata) {
         setId(user.getId());
         setExternalId(user.getExternalId());
         setUsername(user.getUsername());
@@ -59,6 +69,10 @@ public class UserEntity extends User {
         setAdditionalInformation(user.getAdditionalInformation());
         setCreatedAt(user.getCreatedAt());
         setUpdatedAt(user.getUpdatedAt());
+        if (withMetadata) {
+            this.metadata = new HashMap<>();
+            this.metadata.put(MD_SOURCE_ID, user.getSource());
+        }
     }
 
     public ApplicationEntity getApplicationEntity() {
@@ -68,4 +82,13 @@ public class UserEntity extends User {
     public void setApplicationEntity(ApplicationEntity applicationEntity) {
         this.applicationEntity = applicationEntity;
     }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+
 }

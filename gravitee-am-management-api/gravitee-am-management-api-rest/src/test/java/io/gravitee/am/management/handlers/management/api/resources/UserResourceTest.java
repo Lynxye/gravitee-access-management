@@ -18,6 +18,7 @@ package io.gravitee.am.management.handlers.management.api.resources;
 import io.gravitee.am.management.handlers.management.api.JerseySpringTest;
 import io.gravitee.am.management.handlers.management.api.model.PasswordValue;
 import io.gravitee.am.management.handlers.management.api.model.StatusEntity;
+import io.gravitee.am.management.handlers.management.api.model.UserEntity;
 import io.gravitee.am.model.Domain;
 import io.gravitee.am.model.ReferenceType;
 import io.gravitee.am.model.User;
@@ -31,9 +32,12 @@ import org.junit.Test;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
 /**
@@ -54,7 +58,8 @@ public class UserResourceTest extends JerseySpringTest {
         mockUser.setUsername("user-username");
         mockUser.setReferenceType(ReferenceType.DOMAIN);
         mockUser.setReferenceId(domainId);
-
+        mockUser.setSource("source");
+        doReturn(Maybe.empty()).when(identityProviderService).findById(any());
         doReturn(Maybe.just(mockDomain)).when(domainService).findById(domainId);
         doReturn(Maybe.just(mockUser)).when(userService).findById(userId);
 
@@ -64,6 +69,35 @@ public class UserResourceTest extends JerseySpringTest {
         final User user = readEntity(response, User.class);
         assertEquals(domainId, user.getReferenceId());
         assertEquals("user-username", user.getUsername());
+        // user has been created at this point, that mean the metadata field doesn't exist into the payload
+     }
+
+    @Test
+    public void shouldGetUserWithMetadata() {
+        final String domainId = "domain-id";
+        final Domain mockDomain = new Domain();
+        mockDomain.setId(domainId);
+
+        final String userId = "user-id";
+        final User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername("user-username");
+        mockUser.setReferenceType(ReferenceType.DOMAIN);
+        mockUser.setReferenceId(domainId);
+        mockUser.setSource("source");
+
+        doReturn(Maybe.empty()).when(identityProviderService).findById(any());
+        doReturn(Maybe.just(mockDomain)).when(domainService).findById(domainId);
+        doReturn(Maybe.just(mockUser)).when(userService).findById(userId);
+
+        final Response response = target("domains").path(domainId).path("users").path(userId).queryParam("metadata", true).request().get();
+        assertEquals(HttpStatusCode.OK_200, response.getStatus());
+
+        final Map userEntity = readEntity(response, HashMap.class);
+        assertEquals(domainId, userEntity.get("referenceId"));
+        assertEquals("user-username", userEntity.get("username"));
+        assertNotNull("metadata should not be null", userEntity.get("metadata"));
+        assertTrue("metadata should contain sourceId", ((Map)userEntity.get("metadata")).containsKey(UserEntity.MD_SOURCE_ID));
     }
 
     @Test
