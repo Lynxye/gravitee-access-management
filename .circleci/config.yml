@@ -24,16 +24,18 @@ jobs:
           name: Install npm dependencies
           command: |
             npm install --save
-      - snyk/scan
+      #- snyk/scan
+      #- run:
+      #    name: Run Unit Tests
 #test
 workflows:
   build_and_test:
     jobs:
-      - build
-      - approve-test:
-          type: approval
-          requires:
-            - build
-      - run_tests:
-          requires:
-            - approve-test
+      - run_tests
+      #- approve-test:
+      #    type: approval
+      #    requires:
+      #      - build
+      #- run_tests:
+      #   requires:
+      #      - approve-test
