@@ -25,6 +25,7 @@ jobs:
           command: |
             npm install --save
       - snyk/scan
+#test
 workflows:
   build_and_test:
     jobs:
