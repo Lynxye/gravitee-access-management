@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  snyk: snyk/snyk@1.0.1
+  snyk: snyk/snyk@1.1.2
 jobs:
   build:
     working_directory: ~/circleci-python
