@@ -4,9 +4,6 @@ orbs:
   path-filtering: circleci/path-filtering@0.0.2
 workflows:
   containter-test-check:
-    when:
-      and:
-        - equal: [ pull_requests, << pipeline.parameters.gio_action >> ]
     jobs:    
       - path-filtering/filter:
           base-revision: << pipeline.git.branch >>
