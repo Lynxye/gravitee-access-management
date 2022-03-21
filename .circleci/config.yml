@@ -55,7 +55,7 @@ orbs:
   path-filtering: circleci/path-filtering@0.1.2
 
 # This allows you to use CircleCI's dynamic configuration feature
-setup: true
+#setup: true
 
 jobs:
   secrethub:
