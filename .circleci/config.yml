@@ -515,17 +515,21 @@ workflows:
       - run_postman_tests_psql:
           requires:
             - approve-tests-mongo-psql
+  setup:
+    when:
+      and:
+        - equal: [ pull_requests, << pipeline.parameters.gio_action >> ]
+    jobs:    
+      - path-filtering/filter:
+          base-revision: << pipeline.git.branch >>
+          config-path: .circleci/config.yml
+          mapping: |
+            docs/.* testcontainer_tests true
   testcontainer_tests:
     when:
       and:
         - equal: [ pull_requests, << pipeline.parameters.gio_action >> ]
     jobs:
-      - path-filtering/filter:
-          base-revision: << pipeline.git.branch >>
-          config-path: .circleci/config.yml
-          mapping: |
-            ^((?!docs/).)*$ trigger-src true
-            docs/.* trigger-docs true
       - secrethub:
           context:
             - cicd-orchestrator
