@@ -524,7 +524,7 @@ workflows:
           base-revision: << pipeline.git.branch >>
           config-path: .circleci/config.yml
           mapping: |
-            docs/.* testcontainer_tests true
+            gravitee-am-reporter/.* testcontainer_tests true
   testcontainer_tests:
     when:
       and:
