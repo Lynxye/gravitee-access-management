@@ -505,7 +505,16 @@ workflows:
               ignore:
                 - master
                 # - /^[0-999].[0-999].x/ # Ignore support branches, because they are checked with noightly ? Would make sense...
-
+      - approve-tests-mongo-psql:
+          type: approval
+          requires: 
+            - pr_secrets_resolution
+      - run_postman_tests_mongo:
+          requires:
+            - approve-tests-mongo-psql
+      - run_postman_tests_psql:
+          requires:
+            - approve-tests-mongo-psql
   testcontainer_tests:
     when:
       and:
