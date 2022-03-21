@@ -7,6 +7,6 @@ workflows:
     jobs:    
       - path-filtering/filter:
           base-revision: << pipeline.git.branch >>
-          config-path: ".circleci/config.yml"
+          config-path: ".circleci/workflows.yml"
           mapping: |
             gravitee-am-reporter/.* run-container-test true 
