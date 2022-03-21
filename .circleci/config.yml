@@ -531,10 +531,10 @@ workflows:
           mapping: |
             gravitee-am-reporter/.* run-container-test true
   testcontainer_tests:
-  #  when: << pipeline.parameters.run-containter-test >>
-    when:
-      and:
-        - equal: [ pull_requests, << pipeline.parameters.gio_action >>, << pipeline.parameters.run-containter-test >> ]
+    when: << pipeline.parameters.run-container-test >>
+  #  when:
+  #    and:
+  #      - equal: [ pull_requests, << pipeline.parameters.gio_action >>, << pipeline.parameters.run-container-test >> ]
     jobs:
       - secrethub:
           context:
