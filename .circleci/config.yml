@@ -54,9 +54,6 @@ orbs:
   slack: circleci/slack@4.8.1
   path-filtering: circleci/path-filtering@0.0.2
 
-# This allows you to use CircleCI's dynamic configuration feature
-setup: true
-
 jobs:
   secrethub:
     docker:
