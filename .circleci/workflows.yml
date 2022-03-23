@@ -336,8 +336,9 @@ jobs:
           command: |
             #export AM_VERSION=$(mvn -s /tmp/.circleci.settings.xml -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
             #echo "Gravitee AM version: ${AM_VERSION}"
+            AM_VERSION="3.17.0-SNAPSHOT"
             export IMAGE_TAG=graviteeio.azurecr.io/am-management-api:${TAG}
-            docker build -f docker/management-api/Dockerfile-dev -t ${IMAGE_TAG} /tmp
+            docker build -f docker/management-api/Dockerfile-dev --build-arg GRAVITEEAM_VERSION=${AM_VERSION} -t ${IMAGE_TAG} /tmp
       - snyk/scan:
           severity-threshold: high
           docker-image-name: ${IMAGE_TAG}
