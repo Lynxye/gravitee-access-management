@@ -556,7 +556,7 @@ workflows:
       #    requires:
       #      - pr_secrets_resolution
           # "What is the maven ID of the maven profile to use to build and deploy SNAPSHOTS to Prviate Artifactory ?"
-          maven_profile_id: 'gio-dev'
+      #    maven_profile_id: 'gio-dev'
           # nexus_snapshots_url: 'https://oss.sonatype.org/content/repositories/snapshots'
           # nexus_snapshots_server_id: 'sonatype-nexus-snapshots'
           # container_gun_image_org: 'cimg'
