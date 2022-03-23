@@ -323,43 +323,6 @@ jobs:
             echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
             docker push ${IMAGE_TAG}
  
-  snyk-scan-test:
-    docker:
-      - image: cimg/openjdk:17.0.1
-    resource_class: small
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /tmp
-      - setup_remote_docker
-      - run:
-          name: Compute Tag for Docker images
-          command: |
-            # Compute tag with branch name, commmit SHA and timestamp. Then slugify it to be sure it can be handled by Docker
-            export TAG=$(echo "${CIRCLE_BRANCH:0:15}-${CIRCLE_SHA1:0:7}-$(date +%s)" | sed -E 's/[~^]+//g' | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+|-+$//g' | tr A-Z a-z)
-            # Workaround for sharing this variable to the next steps
-            echo "export TAG=$TAG" >> $BASH_ENV
-            echo "Docker images will be tagged with: ${TAG}"
-            echo $TAG > /tmp/docker-tag.txt
-      - run:
-          name: Build & Publish Management API Docker Image to Azure Registry
-          command: |
-            export AM_VERSION=$(mvn -s /tmp/.circleci.settings.xml -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-            echo "Gravitee AM version: ${AM_VERSION}"
-            export IMAGE_TAG=graviteeio.azurecr.io/am-management-api:${TAG}
-            echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV
-            docker build -f docker/management-api/Dockerfile-dev --build-arg GRAVITEEAM_VERSION=${AM_VERSION} -t ${IMAGE_TAG} /tmp
-      - snyk/scan:
-          severity-threshold: high
-          docker-image-name: ${IMAGE_TAG}
-     #     target-file: "Dockerfile"
-          fail-on-issues: true
-      - run:
-          name: Push Docker image Test
-          command: |
-            echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
-            docker push ${IMAGE_TAG}      
-
   publish-images-azure-registry:
     docker:
       - image: cimg/openjdk:17.0.1
@@ -391,7 +354,7 @@ jobs:
           docker-image-name: ${IMAGE_TAG}
           fail-on-issues: true
       - run:
-          name: Push Docker image
+          name: Push API Docker image
           command: |
             echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
             docker push ${IMAGE_TAG}
@@ -400,7 +363,15 @@ jobs:
           command: |
             export AM_VERSION=$(mvn -s /tmp/.circleci.settings.xml -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
             export IMAGE_TAG=graviteeio.azurecr.io/am-gateway:${TAG}
+            echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV            
             docker build -f docker/gateway/Dockerfile-dev --build-arg GRAVITEEAM_VERSION=${AM_VERSION} -t ${IMAGE_TAG} /tmp
+      - snyk/scan:
+          severity-threshold: high
+          docker-image-name: ${IMAGE_TAG}
+          fail-on-issues: true
+      - run:
+          name: Push Gateway Docker image
+          command: |           
             echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
             docker push ${IMAGE_TAG}
       - run:
@@ -411,7 +382,15 @@ jobs:
 
             export AM_VERSION=$(mvn -s /tmp/.circleci.settings.xml -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
             export IMAGE_TAG=graviteeio.azurecr.io/am-management-ui:${TAG}
+            echo "export IMAGE_TAG=$IMAGE_TAG" >> $BASH_ENV            
             docker build -f docker/management-ui/Dockerfile-dev --build-arg GRAVITEEAM_VERSION=${AM_VERSION} -t ${IMAGE_TAG} /tmp
+      - snyk/scan:
+          severity-threshold: high
+          docker-image-name: ${IMAGE_TAG}
+          fail-on-issues: true
+      - run:
+          name: Push Web UI Docker image
+          command: |            
             echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
             docker push ${IMAGE_TAG}
       - persist_to_workspace:
@@ -531,54 +510,37 @@ workflows:
     when:
       and:
         - equal: [ pull_requests, << pipeline.parameters.gio_action >> ]
-    jobs:
-      - secrethub:
-          context:
-            - cicd-orchestrator
-      - build:
-          requires:
-            - secrethub
-      - snyk-scan-test:
+    jobs:     
+      - gravitee/d_pull_requests_secrets:
           context: cicd-orchestrator
-          pre-steps:
-            - secrethub/env-export:
-                secret-path: graviteeio/cicd/azure/docker-registries/graviteeio/username
-                var-name: AZURE_DOCKER_REGISTRY_USERNAME
-            - secrethub/env-export:
-                secret-path: graviteeio/cicd/azure/docker-registries/graviteeio/password
-                var-name: AZURE_DOCKER_REGISTRY_PASSWORD
+          name: pr_secrets_resolution
+      - gravitee/d_pull_requests_ce:
+          name: process_pull_request
           requires:
-            - build          
-      #- gravitee/d_pull_requests_secrets:
-      #    context: cicd-orchestrator
-      #    name: pr_secrets_resolution
-      #- gravitee/d_pull_requests_ce:
-      #    name: process_pull_request
-      #    requires:
-      #      - pr_secrets_resolution
+            - pr_secrets_resolution
           # "What is the maven ID of the maven profile to use to build and deploy SNAPSHOTS to Prviate Artifactory ?"
-      #    maven_profile_id: 'gio-dev'
+          maven_profile_id: 'gio-dev'
           # nexus_snapshots_url: 'https://oss.sonatype.org/content/repositories/snapshots'
           # nexus_snapshots_server_id: 'sonatype-nexus-snapshots'
           # container_gun_image_org: 'cimg'
           # container_gun_image_name: 'openjdk'
           # container_gun_image_tag: '17.0.1'
-      #   container_size: 'xlarge'
-      #    filters:
-      #      branches:
-      #        ignore:
-      #          - master
-      #          # - /^[0-999].[0-999].x/ # Ignore support branches, because they are checked with noightly ? Would make sense...
-      #- approve-tests-mongo-psql:
-      #    type: approval
-      #    requires: 
-      #      - process_pull_request
-      #- run_postman_tests_mongo:
-      #    requires:
-      #      - approve-tests-mongo-psql
-      #- run_postman_tests_psql:
-      #    requires:
-      #      - approve-tests-mongo-psql
+         container_size: 'xlarge'
+          filters:
+            branches:
+              ignore:
+                - master
+                - /^[0-999].[0-999].x/ # Ignore support branches, because they are checked with noightly ? Would make sense...
+      - approve-tests-mongo-psql:
+          type: approval
+          requires: 
+            - process_pull_request
+      - run_postman_tests_mongo:
+          requires:
+            - approve-tests-mongo-psql
+      - run_postman_tests_psql:
+          requires:
+            - approve-tests-mongo-psql
   testcontainer_tests:
     when: << pipeline.parameters.run-container-test >>   
     #when:
