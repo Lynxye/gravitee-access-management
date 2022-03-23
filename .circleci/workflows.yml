@@ -331,7 +331,23 @@ jobs:
       - checkout
       - attach_workspace:
           at: /tmp
-      - snyk/scan       
+      - run:
+          name: Build & Publish Management API Docker Image to Azure Registry Test
+          command: |
+            #export AM_VERSION=$(mvn -s /tmp/.circleci.settings.xml -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+            #echo "Gravitee AM version: ${AM_VERSION}"
+            export IMAGE_TAG=graviteeio.azurecr.io/am-management-api:${TAG}
+            docker build -f docker/management-api/Dockerfile-dev -t ${IMAGE_TAG} /tmp
+      - snyk/scan:
+          severity-threshold: high
+          docker-image-name: ${IMAGE_TAG}
+          target-file: "Dockerfile"
+          fail-on-issues: true
+      - run:
+          name: Push Docker image Test
+          command: |
+            echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
+            docker push ${IMAGE_TAG}       
 
   publish-images-azure-registry:
     docker:
