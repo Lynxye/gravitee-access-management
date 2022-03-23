@@ -346,18 +346,19 @@ jobs:
           command: |
             export AM_VERSION=$(mvn -s /tmp/.circleci.settings.xml -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
             echo "Gravitee AM version: ${AM_VERSION}"
-            export IMAGE_TAG=graviteeio.azurecr.io/am-management-api:testsnyk
+            export IMAGE_TAG=graviteeio.azurecr.io/am-management-api:${TAG}
+            echo "export IMAGE_TAG=$IMAGE_TAG" >> BASH_ENV
             docker build -f docker/management-api/Dockerfile-dev --build-arg GRAVITEEAM_VERSION=${AM_VERSION} -t ${IMAGE_TAG} /tmp
       - snyk/scan:
           severity-threshold: high
-          docker-image-name: graviteeio.azurecr.io/am-management-api:testsnyk
+          docker-image-name: ${IMAGE_TAG}
      #     target-file: "Dockerfile"
           fail-on-issues: true
       - run:
           name: Push Docker image Test
           command: |
             echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
-            docker push graviteeio.azurecr.io/am-management-api:testsnyk      
+            docker push ${IMAGE_TAG}      
 
   publish-images-azure-registry:
     docker:
