@@ -52,6 +52,7 @@ orbs:
   gravitee: gravitee-io/gravitee@1.0
   secrethub: secrethub/cli@1.1.0
   slack: circleci/slack@4.8.1
+  snyk: snyk/snyk@1.1.2
 
 jobs:
   secrethub:
@@ -347,6 +348,14 @@ jobs:
             echo "Gravitee AM version: ${AM_VERSION}"
             export IMAGE_TAG=graviteeio.azurecr.io/am-management-api:${TAG}
             docker build -f docker/management-api/Dockerfile-dev --build-arg GRAVITEEAM_VERSION=${AM_VERSION} -t ${IMAGE_TAG} /tmp
+      - snyk/scan:
+          severity-threshold: high
+          docker-image-name: ${IMAGE_TAG}
+          target-file: "Dockerfile"
+          fail-on-issues: true
+      - run:
+          name: Push Docker image
+          command: |
             echo $AZURE_DOCKER_REGISTRY_PASSWORD | docker login --username $AZURE_DOCKER_REGISTRY_USERNAME --password-stdin graviteeio.azurecr.io
             docker push ${IMAGE_TAG}
       - run:
