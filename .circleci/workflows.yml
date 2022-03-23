@@ -531,7 +531,23 @@ workflows:
       and:
         - equal: [ pull_requests, << pipeline.parameters.gio_action >> ]
     jobs:
-      - snyk-scan-test
+      - secrethub:
+          context:
+            - cicd-orchestrator
+      - build:
+          requires:
+            - secrethub
+      - snyk-scan-test:
+          context: cicd-orchestrator
+          pre-steps:
+            - secrethub/env-export:
+                secret-path: graviteeio/cicd/azure/docker-registries/graviteeio/username
+                var-name: AZURE_DOCKER_REGISTRY_USERNAME
+            - secrethub/env-export:
+                secret-path: graviteeio/cicd/azure/docker-registries/graviteeio/password
+                var-name: AZURE_DOCKER_REGISTRY_PASSWORD
+          requires:
+            - secrethub          
       - gravitee/d_pull_requests_secrets:
           context: cicd-orchestrator
           name: pr_secrets_resolution
