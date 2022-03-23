@@ -547,14 +547,14 @@ workflows:
                 secret-path: graviteeio/cicd/azure/docker-registries/graviteeio/password
                 var-name: AZURE_DOCKER_REGISTRY_PASSWORD
           requires:
-            - secrethub          
-      - gravitee/d_pull_requests_secrets:
-          context: cicd-orchestrator
-          name: pr_secrets_resolution
-      - gravitee/d_pull_requests_ce:
-          name: process_pull_request
-          requires:
-            - pr_secrets_resolution
+            - build          
+      #- gravitee/d_pull_requests_secrets:
+      #    context: cicd-orchestrator
+      #    name: pr_secrets_resolution
+      #- gravitee/d_pull_requests_ce:
+      #    name: process_pull_request
+      #    requires:
+      #      - pr_secrets_resolution
           # "What is the maven ID of the maven profile to use to build and deploy SNAPSHOTS to Prviate Artifactory ?"
           maven_profile_id: 'gio-dev'
           # nexus_snapshots_url: 'https://oss.sonatype.org/content/repositories/snapshots'
@@ -562,22 +562,22 @@ workflows:
           # container_gun_image_org: 'cimg'
           # container_gun_image_name: 'openjdk'
           # container_gun_image_tag: '17.0.1'
-          container_size: 'xlarge'
-          filters:
-            branches:
-              ignore:
-                - master
-                # - /^[0-999].[0-999].x/ # Ignore support branches, because they are checked with noightly ? Would make sense...
-      - approve-tests-mongo-psql:
-          type: approval
-          requires: 
-            - process_pull_request
-      - run_postman_tests_mongo:
-          requires:
-            - approve-tests-mongo-psql
-      - run_postman_tests_psql:
-          requires:
-            - approve-tests-mongo-psql
+      #   container_size: 'xlarge'
+      #    filters:
+      #      branches:
+      #        ignore:
+      #          - master
+      #          # - /^[0-999].[0-999].x/ # Ignore support branches, because they are checked with noightly ? Would make sense...
+      #- approve-tests-mongo-psql:
+      #    type: approval
+      #    requires: 
+      #      - process_pull_request
+      #- run_postman_tests_mongo:
+      #    requires:
+      #      - approve-tests-mongo-psql
+      #- run_postman_tests_psql:
+      #    requires:
+      #      - approve-tests-mongo-psql
   testcontainer_tests:
     when: << pipeline.parameters.run-container-test >>   
     #when:
