@@ -352,7 +352,7 @@ jobs:
       - snyk/scan:
           severity-threshold: high
           docker-image-name: ${IMAGE_TAG}
-          fail-on-issues: true
+          fail-on-issues: false
       - run:
           name: Push API Docker image
           command: |
@@ -368,7 +368,7 @@ jobs:
       - snyk/scan:
           severity-threshold: high
           docker-image-name: ${IMAGE_TAG}
-          fail-on-issues: true
+          fail-on-issues: false
       - run:
           name: Push Gateway Docker image
           command: |           
@@ -387,7 +387,7 @@ jobs:
       - snyk/scan:
           severity-threshold: high
           docker-image-name: ${IMAGE_TAG}
-          fail-on-issues: true
+          fail-on-issues: false
       - run:
           name: Push Web UI Docker image
           command: |            
