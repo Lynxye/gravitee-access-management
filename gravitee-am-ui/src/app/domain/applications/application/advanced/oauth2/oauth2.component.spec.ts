@@ -23,8 +23,9 @@ describe('ClientOAuth2Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ClientOAuth2Component ]
-    })
+    declarations: [ClientOAuth2Component],
+    teardown: { destroyAfterEach: false }
+})
       .compileComponents();
   }));
 
