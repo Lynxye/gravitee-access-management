@@ -104,8 +104,8 @@ public class RootProvider extends AbstractService<ProtocolProvider> implements P
     public static final String PATH_REGISTER = "/register";
     public static final String PATH_CONFIRM_REGISTRATION = "/confirmRegistration";
     public static final String PATH_RESET_PASSWORD = "/resetPassword";
-    public static final String PATH_WEBAUTHN_REGISTER = "/webauthn/register";
-    public static final String PATH_WEBAUTHN_REGISTER_CREDENTIALS = "/webauthn/register/credentials";
+    public static final String PATH_WEBAUTHN_REGISTER = "/webauthn/register/v2";
+    public static final String PATH_WEBAUTHN_REGISTER_CREDENTIALS = "/webauthn/register/credentials/v2";
     public static final String PATH_WEBAUTHN_RESPONSE = "/webauthn/response";
     public static final String PATH_WEBAUTHN_LOGIN = "/webauthn/login";
     public static final String PATH_WEBAUTHN_LOGIN_CREDENTIALS = "/webauthn/login/credentials";

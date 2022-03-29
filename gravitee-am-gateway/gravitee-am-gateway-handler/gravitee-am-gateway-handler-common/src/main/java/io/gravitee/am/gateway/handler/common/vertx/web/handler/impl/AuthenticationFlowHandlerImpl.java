@@ -51,7 +51,7 @@ public class AuthenticationFlowHandlerImpl implements AuthenticationFlowHandler 
         steps.add(new SPNEGOStep(RedirectHandler.create("/login/SSO/SPNEGO"), identityProviderManager));
         steps.add(new FormIdentifierFirstLoginStep(RedirectHandler.create("/login/identifier"), domain));
         steps.add(new FormLoginStep(RedirectHandler.create("/login")));
-        steps.add(new WebAuthnRegisterStep(domain, RedirectHandler.create("/webauthn/register")));
+        steps.add(new WebAuthnRegisterStep(domain, RedirectHandler.create("/webauthn/register/v2")));
         steps.add(new MFAEnrollStep(RedirectHandler.create("/mfa/enroll"), ruleEngine));
         steps.add(new MFAChallengeStep(RedirectHandler.create("/mfa/challenge"), ruleEngine));
         return new AuthenticationFlowChainHandler(steps);
